@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TeamSelection } from './components/TeamSelection';
 import { AppointmentList } from './components/AppointmentList';
+import { AppointmentCalendar } from './components/AppointmentCalendar';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ReservationForm } from './components/ReservationForm';
 import { AdminLogin } from './components/AdminLogin';
@@ -8,6 +9,7 @@ import { AddAppointmentForm } from './components/AddAppointmentForm';
 import { AdminDashboard } from './components/AdminDashboard';
 import { supabase } from '../lib/supabase';
 import { Button } from './components/ui/button';
+import { LayoutGrid, Calendar as CalendarIcon } from 'lucide-react';
 
 export type Team = 'H1' | 'H2' | 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
 
@@ -32,6 +34,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [session, setSession] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('isAdminAuthenticated') === 'true';
@@ -234,24 +237,59 @@ export default function App() {
         )}
 
         {!isAdminMode && selectedTeam && !selectedAppointment && (
-          <div>
-            <div className="mb-6 flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
-              <div>
-                <h3 className="font-bold text-gray-900 text-xl">Team {selectedTeam}</h3>
-                <p className="text-sm text-gray-600">Alle verfügbaren Termine in der Übersicht</p>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
+              <div className="flex-1">
+                <div className="flex items-center gap-4">
+                  <h3 className="font-bold text-gray-900 text-xl">Team {selectedTeam}</h3>
+                  <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-1.5 rounded-md transition-all flex items-center gap-2 text-sm font-medium ${
+                        viewMode === 'list'
+                          ? 'bg-white shadow-sm text-orange-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      title="Listenansicht"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      <span className="hidden sm:inline">Liste</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('calendar')}
+                      className={`p-1.5 rounded-md transition-all flex items-center gap-2 text-sm font-medium ${
+                        viewMode === 'calendar'
+                          ? 'bg-white shadow-sm text-orange-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      title="Kalenderansicht"
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      <span className="hidden sm:inline">Kalender</span>
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  {viewMode === 'list' ? 'Alle verfügbaren Termine in der Übersicht' : 'Wählen Sie einen Tag im Kalender'}
+                </p>
               </div>
               <button
                 onClick={handleBack}
-                className="px-4 py-2 text-orange-500 hover:bg-orange-50 rounded-md transition-colors font-medium flex items-center gap-2"
+                className="px-4 py-2 text-orange-500 hover:bg-orange-50 rounded-md transition-colors font-medium flex items-center gap-2 ml-4"
               >
-                ← Team wechseln
+                ← <span className="hidden sm:inline">Team wechseln</span>
               </button>
             </div>
             {loading ? (
               <LoadingSpinner />
-            ) : (
+            ) : viewMode === 'list' ? (
               <AppointmentList
                 team={selectedTeam}
+                appointments={appointments}
+                onSelectAppointment={handleAppointmentSelect}
+              />
+            ) : (
+              <AppointmentCalendar
                 appointments={appointments}
                 onSelectAppointment={handleAppointmentSelect}
               />

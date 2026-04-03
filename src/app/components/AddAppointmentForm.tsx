@@ -21,6 +21,11 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Bulk creation states
+  const [isBulk, setIsBulk] = useState(false);
+  const [repeatUntil, setRepeatUntil] = useState('');
+  const [repeatWeeks, setRepeatWeeks] = useState(1);
+
   // Generate 15-minute intervals for time selection
   const timeOptions = [];
   for (let hour = 0; hour < 24; hour++) {
@@ -42,11 +47,37 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
     setSuccess(false);
 
     try {
+      const appointmentsToInsert = [];
+      
+      if (isBulk && date && repeatUntil) {
+        const startDate = new Date(date);
+        const endDate = new Date(repeatUntil);
+        const currentDate = new Date(startDate);
+
+        while (currentDate <= endDate) {
+          appointmentsToInsert.push({
+            date: currentDate.toISOString().split('T')[0],
+            time,
+            location,
+            team: targetTeam,
+            reserved: false
+          });
+          // Add weeks
+          currentDate.setDate(currentDate.getDate() + (7 * repeatWeeks));
+        }
+      } else {
+        appointmentsToInsert.push({ date, time, location, team: targetTeam, reserved: false });
+      }
+
+      if (appointmentsToInsert.length === 0) {
+        setError('Keine Termine zum Erstellen gefunden.');
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('appointments')
-        .insert([
-          { date, time, location, team: targetTeam, reserved: false }
-        ]);
+        .insert(appointmentsToInsert);
 
       if (error) throw error;
       
@@ -57,6 +88,7 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
         // Formular zurücksetzen für den nächsten Termin
         // Reset time to default 20:30 instead of empty
         setTime('20:30');
+        if (!isBulk) setDate('');
       }
     } catch (err: any) {
       setError(err.message || 'Termin konnte nicht gespeichert werden');
@@ -68,12 +100,23 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Neuen Termin hinzufügen</CardTitle>
+        <CardTitle>{isBulk ? 'Neue Terminserie hinzufügen' : 'Neuen Termin hinzufügen'}</CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2 mb-4">
+            <input 
+              type="checkbox" 
+              id="isBulk" 
+              checked={isBulk} 
+              onChange={(e) => setIsBulk(e.target.checked)}
+              className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
+            />
+            <Label htmlFor="isBulk" className="cursor-pointer font-medium">mehrere wiederholende Termine</Label>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="date">Datum</Label>
+            <Label htmlFor="date">{isBulk ? 'Startdatum' : 'Datum'}</Label>
             <Input
               id="date"
               type="date"
@@ -82,8 +125,37 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
               required
             />
           </div>
+
+          {isBulk && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="repeatUntil">Wiederholen bis</Label>
+                <Input
+                  id="repeatUntil"
+                  type="date"
+                  value={repeatUntil}
+                  onChange={(e) => setRepeatUntil(e.target.value)}
+                  required={isBulk}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="repeatWeeks">Alle X Wochen</Label>
+                <select
+                  id="repeatWeeks"
+                  value={repeatWeeks}
+                  onChange={(e) => setRepeatWeeks(parseInt(e.target.value))}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value={1}>Jede Woche</option>
+                  <option value={2}>Alle 2 Wochen</option>
+                  <option value={3}>Alle 3 Wochen</option>
+                  <option value={4}>Alle 4 Wochen</option>
+                </select>
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
-            <Label htmlFor="time">Uhrzeit (15min Intervalle)</Label>
+            <Label htmlFor="time">Uhrzeit</Label>
             <select
               id="time"
               value={time}
@@ -100,14 +172,28 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
           </div>
           <div className="space-y-2">
             <Label htmlFor="location">Ort</Label>
-            <Input
-              id="location"
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Sporthalle Nord"
-              required
-            />
+            <div className="flex gap-2">
+              <Input
+                id="location"
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Sporthalle Nord"
+                required
+                className="flex-1"
+              />
+              {location && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setLocation('')}
+                  className="px-2"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="team">Team</Label>
