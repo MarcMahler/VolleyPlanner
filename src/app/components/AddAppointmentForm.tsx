@@ -213,6 +213,10 @@ export function AddAppointmentForm({ team, onSuccess, onCancel, keepOpen = false
               <option value="D3">D3</option>
               <option value="D4">D4</option>
               <option value="D5">D5</option>
+              <option value="U16">U16</option>
+              <option value="U18">U18</option>
+              <option value="U20">U20</option>
+              <option value="U23">U23</option>
             </select>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}

@@ -9,9 +9,9 @@ import { AddAppointmentForm } from './components/AddAppointmentForm';
 import { AdminDashboard } from './components/AdminDashboard';
 import { supabase } from '../lib/supabase';
 import { Button } from './components/ui/button';
-import { LayoutGrid, Calendar as CalendarIcon } from 'lucide-react';
+import { LayoutGrid, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
 
-export type Team = 'H1' | 'H2' | 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
+export type Team = 'H1' | 'H2' | 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'U16' | 'U18' | 'U20' | 'U23';
 
 export interface Appointment {
   id: string;
@@ -166,14 +166,28 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        <header className="text-center mb-12 relative">
-          <h1 className="mb-2 text-gray-900">Wädivolley</h1>
-          <h2 className="text-orange-500 mb-4">Spieltermin-Vereinbarung</h2>
-          <p className="text-gray-600">Wählen Sie Ihr Team und reservieren Sie einen Spieltermin</p>
+        <header className="text-center mb-16 relative pt-8">
+          <div className="inline-block mb-6 relative">
+            <div className="absolute -inset-4 bg-orange-500/10 blur-3xl rounded-full -z-10"></div>
+            <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter">
+              Gameday <span className="text-orange-500">Planner</span>
+            </h1>
+          </div>
           
-          <div className="absolute top-0 right-0">
+          {!selectedTeam && (
+            <div className="max-w-2xl mx-auto space-y-4">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-800 leading-relaxed">
+                Für welches Team von Wädivolley möchtest du einen Spiel-Termin vereinbaren?
+              </h2>
+              <p className="text-gray-500 text-lg">
+                Wählen Sie Ihr Team unten aus, um verfügbare Spieltage zu sehen und zu reservieren.
+              </p>
+            </div>
+          )}
+          
+          <div className="absolute top-0 right-0 sm:pr-0 pr-4">
             {isAuthenticated ? (
               <div className="flex gap-2">
                 {selectedTeam && (
@@ -273,12 +287,14 @@ export default function App() {
                   {viewMode === 'list' ? 'Alle verfügbaren Termine in der Übersicht' : 'Wählen Sie einen Tag im Kalender'}
                 </p>
               </div>
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleBack}
-                className="px-4 py-2 text-orange-500 hover:bg-orange-50 rounded-md transition-colors font-medium flex items-center gap-2 ml-4"
+                className="text-orange-500 hover:bg-orange-50 font-medium flex items-center gap-2 ml-4"
               >
-                ← <span className="hidden sm:inline">Team wechseln</span>
-              </button>
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Team wechseln</span>
+              </Button>
             </div>
             {loading ? (
               <LoadingSpinner />
@@ -299,12 +315,14 @@ export default function App() {
 
         {selectedAppointment && (
           <div>
-            <button
+            <Button
+              variant="ghost"
               onClick={handleBack}
-              className="mb-6 px-4 py-2 text-orange-500 hover:text-orange-400 flex items-center gap-2 font-medium"
+              className="mb-6 text-orange-500 hover:text-orange-400 flex items-center gap-2 font-medium"
             >
-              ← Zurück zur Terminübersicht
-            </button>
+              <ArrowLeft className="w-4 h-4" />
+              Zurück zur Terminübersicht
+            </Button>
             <ReservationForm
               appointment={selectedAppointment}
               team={selectedTeam!}
