@@ -71,7 +71,7 @@ export function ReservationForm({ appointment, team, onSubmit, onCancel }: Reser
             onChange={(e) => setTeamName(e.target.value)}
             required
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            placeholder="FC Beispiel"
+            placeholder="VBC Beispiel"
           />
         </div>
 
