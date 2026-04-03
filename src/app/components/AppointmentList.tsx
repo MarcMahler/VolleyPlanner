@@ -41,9 +41,13 @@ export function AppointmentList({ team, appointments, onSelectAppointment }: App
                     <span className="text-lg font-semibold text-gray-800">
                       {formatDate(appointment.date)}
                     </span>
-                    <span className="text-orange-600 font-bold">
-                      {appointment.time.substring(0, 5)} Uhr
-                    </span>
+                    <div className="flex items-center gap-1 text-orange-600 font-bold">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" strokeWidth={2} />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
+                      </svg>
+                      <span>{appointment.time.substring(0, 5)} Uhr</span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

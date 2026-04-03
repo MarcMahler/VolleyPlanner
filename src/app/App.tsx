@@ -33,7 +33,13 @@ export default function App() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [session, setSession] = useState<any>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isAdminAuthenticated') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('isAdminAuthenticated', isAuthenticated.toString());
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchAppointments();
@@ -160,7 +166,7 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-12 relative">
-          <h1 className="mb-2 text-gray-900">Wödivolley</h1>
+          <h1 className="mb-2 text-gray-900">Wädivolley</h1>
           <h2 className="text-orange-500 mb-4">Spieltermin-Vereinbarung</h2>
           <p className="text-gray-600">Wählen Sie Ihr Team und reservieren Sie einen Spieltermin</p>
           
@@ -210,7 +216,7 @@ export default function App() {
             {showAddForm ? (
               <AddAppointmentForm 
                 team={selectedTeam}
-                onSuccess={() => { fetchAppointments(); setShowAddForm(false); }} 
+                onSuccess={() => { fetchAppointments(); }} 
                 onCancel={() => setShowAddForm(false)}
                 keepOpen={true}
               />
