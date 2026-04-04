@@ -180,13 +180,12 @@ export default function App() {
           <div className="absolute top-0 right-0 p-2 sm:p-0 flex items-center gap-3 z-20">
             {selectedTeam && (
               <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-orange-100 rounded-full px-3 py-1.5 shadow-sm">
-                <div className="flex items-center gap-2 mr-1 sm:mr-2">
-                  <div className={`w-2 h-2 rounded-full ${isAuthenticated ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-gray-300'}`}></div>
-                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500">Admin</span>
-                </div>
-                
                 {isAuthenticated ? (
                   <>
+                    <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                      <div className={`w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]`}></div>
+                      <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-900">Admin</span>
+                    </div>
                     <div className="h-4 w-[1px] bg-orange-100 mx-0.5 sm:mx-1"></div>
                     <div className="flex items-center gap-2 scale-75 sm:scale-90">
                       <Switch 
@@ -200,23 +199,20 @@ export default function App() {
                       variant="ghost" 
                       size="sm" 
                       onClick={handleLogout} 
-                      className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] uppercase font-bold text-gray-400 hover:text-red-500 hover:bg-transparent transition-colors"
+                      className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] uppercase font-bold text-gray-800 hover:text-red-500 hover:bg-transparent transition-colors"
                     >
                       Logout
                     </Button>
                   </>
                 ) : (
-                  <>
-                    <div className="h-4 w-[1px] bg-orange-100 mx-0.5 sm:mx-1"></div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setIsAdminMode(true)} 
-                      className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] uppercase font-bold text-gray-400 hover:text-orange-600 hover:bg-transparent transition-colors"
-                    >
-                      Login
-                    </Button>
-                  </>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setIsAdminMode(true)} 
+                    className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] uppercase font-bold text-gray-800 hover:text-orange-600 hover:bg-transparent transition-colors"
+                  >
+                    Login
+                  </Button>
                 )}
               </div>
             )}
