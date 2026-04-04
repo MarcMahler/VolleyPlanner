@@ -7,6 +7,8 @@ import { ReservationForm } from './components/ReservationForm';
 import { AdminLogin } from './components/AdminLogin';
 import { AddAppointmentForm } from './components/AddAppointmentForm';
 import { AdminDashboard } from './components/AdminDashboard';
+import { Switch } from './components/ui/switch';
+import { Label } from './components/ui/label';
 import { supabase } from '../lib/supabase';
 import { Button } from './components/ui/button';
 import { LayoutGrid, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
@@ -150,9 +152,15 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Supabase logout error:", err);
+    }
     setIsAuthenticated(false);
     setIsAdminMode(false);
+    // Wir bleiben beim aktuell ausgewählten Team, damit der User nicht
+    // verwirrt ist, wo er gerade war.
   };
 
   const handleBack = () => {
@@ -168,10 +176,55 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        <header className="text-center mb-16 relative pt-8">
-          <div className="inline-block mb-6 relative">
+        <header className="text-center mb-8 md:mb-16 relative pt-4 md:pt-8">
+          <div className="absolute top-0 right-0 p-2 sm:p-0 flex items-center gap-3 z-20">
+            {selectedTeam && (
+              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-orange-100 rounded-full px-3 py-1.5 shadow-sm">
+                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                  <div className={`w-2 h-2 rounded-full ${isAuthenticated ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-gray-300'}`}></div>
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500">Admin</span>
+                </div>
+                
+                {isAuthenticated ? (
+                  <>
+                    <div className="h-4 w-[1px] bg-orange-100 mx-0.5 sm:mx-1"></div>
+                    <div className="flex items-center gap-2 scale-75 sm:scale-90">
+                      <Switch 
+                        id="header-admin-toggle" 
+                        checked={isAdminMode} 
+                        onCheckedChange={(checked) => setIsAdminMode(checked)}
+                      />
+                    </div>
+                    <div className="h-4 w-[1px] bg-orange-100 mx-0.5 sm:mx-1"></div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleLogout} 
+                      className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] uppercase font-bold text-gray-400 hover:text-red-500 hover:bg-transparent transition-colors"
+                    >
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="h-4 w-[1px] bg-orange-100 mx-0.5 sm:mx-1"></div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setIsAdminMode(true)} 
+                      className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] uppercase font-bold text-gray-400 hover:text-orange-600 hover:bg-transparent transition-colors"
+                    >
+                      Login
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="inline-block mb-6 relative mt-12 sm:mt-0">
             <div className="absolute -inset-4 bg-orange-500/10 blur-3xl rounded-full -z-10"></div>
-            <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter">
+            <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter">
               Gameday <span className="text-orange-500">Planner</span>
             </h1>
           </div>
@@ -186,23 +239,6 @@ export default function App() {
               </p>
             </div>
           )}
-          
-          <div className="absolute top-0 right-0 sm:pr-0 pr-4">
-            {isAuthenticated ? (
-              <div className="flex gap-2">
-                {selectedTeam && (
-                  <Button variant="outline" size="sm" onClick={() => setIsAdminMode(!isAdminMode)}>
-                    {isAdminMode ? 'Zur App' : 'Admin Bereich'}
-                  </Button>
-                )}
-                <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
-              </div>
-            ) : (
-              selectedTeam && (
-                <Button variant="ghost" size="sm" onClick={() => setIsAdminMode(true)}>Admin Login</Button>
-              )
-            )}
-          </div>
         </header>
 
         {isAdminMode && !isAuthenticated && (
@@ -215,15 +251,20 @@ export default function App() {
 
         {isAdminMode && isAuthenticated && (
           <div className="space-y-8">
-            <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
-              <div>
-                <h3 className="font-bold text-gray-900">Admin-Modus: {selectedTeam}</h3>
-                <p className="text-sm text-gray-600">Verwalten Sie Termine und Reservierungen</p>
+            <div className="flex flex-wrap items-center justify-between bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-100 p-2 rounded-full">
+                  <span className="block w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-xl">Team {selectedTeam}</h3>
+                  <p className="text-sm text-gray-600">Admin-Verwaltung aktiv</p>
+                </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-6">
                 <Button 
                   onClick={() => setShowAddForm(!showAddForm)}
-                  className="bg-orange-500 hover:bg-orange-600"
+                  className="bg-orange-500 hover:bg-orange-600 h-9 text-sm"
                 >
                   {showAddForm ? 'Verwaltung anzeigen' : 'Neuen Termin hinzufügen'}
                 </Button>
@@ -287,14 +328,16 @@ export default function App() {
                   {viewMode === 'list' ? 'Alle verfügbaren Termine in der Übersicht' : 'Wählen Sie einen Tag im Kalender'}
                 </p>
               </div>
-              <Button
-                variant="ghost"
-                onClick={handleBack}
-                className="text-orange-500 hover:bg-orange-50 font-medium flex items-center gap-2 ml-4"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Team wechseln</span>
-              </Button>
+              {!isAdminMode && (
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  className="text-orange-500 hover:bg-orange-50 font-medium flex items-center gap-2 ml-4"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Team wechseln</span>
+                </Button>
+              )}
             </div>
             {loading ? (
               <LoadingSpinner />
